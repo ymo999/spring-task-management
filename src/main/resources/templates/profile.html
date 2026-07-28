@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>プロフィール</title>
+</head>
+<body>
+    <h1>プロフィール</h1>
+    <p>ログイン中のメールアドレス: <span th:text="${email}"></span></p>
+    <a th:href="@{/home}">ホームに戻る</a>
+</body>
+</html>
