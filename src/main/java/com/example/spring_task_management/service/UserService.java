@@ -1,3 +1,4 @@
+/// ユーザー登録機能（サインアップ）
 package com.example.spring_task_management.service;
 
 import com.example.spring_task_management.entity.User;
@@ -6,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-// 会員登録機能（サインアップ）
 @Service
 public class UserService {
 

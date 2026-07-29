@@ -12,7 +12,9 @@ public class SampleItem {
     @Id                                                         // 主キー
     @GeneratedValue(strategy = GenerationType.IDENTITY)         // 自動採番
     private Long id;                                            // Null値許容のためラッパークラスで定義
+
     private String name;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // アクセサ

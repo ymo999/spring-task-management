@@ -1,3 +1,4 @@
+/// ログイン機能
 package com.example.spring_task_management.service;
 
 import com.example.spring_task_management.entity.User;
@@ -17,6 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     /**
      * メールアドレスをもとに、DBからユーザー情報を取得しSpring Securityへ渡す
      * （パスワード照合はSpring Security側が自動で行う）
+     * （Userエンティティをそのまま返すのではなく、認証に必要な最小限の情報であるメールアドレスとパスワードハッシュ値のみが返される）
      * @param email the username identifying the user whose data is required.
      * @return 認証に必要な情報を持つUserDetailsオブジェクト
      * @throws UsernameNotFoundException  該当するユーザーが見つからない場合にスローされる

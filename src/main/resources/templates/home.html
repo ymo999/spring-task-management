@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>ホーム</title>
-</head>
-<body>
-    <h1>ログインに成功しました</h1>
-    <p>ようこそ！</p>
-    <a th:href="@{/profile}">プロフィールを見る</a>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit">ログアウト</button>
-    </form>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>ホーム</title>
+    </head>
+    <body>
+        <h1>ログインに成功しました</h1>
+        <p>ようこそ！</p>
+        <a th:href="@{/profile}">プロフィールを見る</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">ログアウト</button>
+        </form>
+    </body>
 </html>

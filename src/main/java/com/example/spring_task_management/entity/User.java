@@ -12,10 +12,14 @@ public class User {
     @Id                                                         // 主キー
     @GeneratedValue(strategy = GenerationType.IDENTITY)         // 自動採番
     private Long id;                                            // Null値許容のためラッパークラスで定義
+
     private String username;
+
     @Column(unique = true)
     private String email;
+
     private String password;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // アクセサ

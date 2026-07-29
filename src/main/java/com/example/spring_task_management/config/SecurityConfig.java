@@ -48,7 +48,9 @@ public class SecurityConfig {
                     auth -> auth.requestMatchers(
 
                             "/error",
-                            "/login"
+                            "/login",
+                            "/register",
+                            "/tasks/new"
                     ).permitAll().anyRequest().authenticated()
                 )
                 .formLogin(

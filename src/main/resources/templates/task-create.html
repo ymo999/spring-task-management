@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>タスク作成</title>
+    </head>
+    <body>
+        <h1>タスク作成</h1>
+        <form th:action="@{/tasks/new}" method="post">
+            <div>
+                <label>タイトル: <input type="text" name="title" /></label>
+            </div>
+            <div>
+                <label>詳細: <input type="text" name="description" /></label>
+            </div>
+            <div>
+                <label>期限日: <input type="date" name="dueDate" /></label>
+            </div>
+            <button type="submit">登録する</button>
+        </form>
+    </body>
+</html>

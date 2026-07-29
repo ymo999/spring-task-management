@@ -86,6 +86,54 @@ GitHubポートフォリオ用アプリ（タスク管理アプリ）の開発�
 - `users` N - N `teams`（`team_members` 中間テーブル経由）
 - `teams` 1 - N `tasks`
 
+### クラス図（現時点：フェーズ3-1完了時点）
+
+```mermaid
+classDiagram
+    class User {
+        -Long id
+        -String username
+        -String email
+        -String password
+        -LocalDateTime createdAt
+    }
+
+    class Task {
+        -Long id
+        -String title
+        -String description
+        -String status
+        -LocalDate dueDate
+        -LocalDateTime createdAt
+    }
+
+    class Team {
+        <<未実装：フェーズ4予定>>
+        -Long id
+        -String name
+        -LocalDateTime createdAt
+    }
+
+    class TeamMember {
+        <<未実装：フェーズ4予定>>
+        -Long id
+        -LocalDateTime joinedAt
+    }
+
+    Task "多" --> "1" User : assignee（担当者）
+    Task "多" --> "1" User : createdBy（作成者）
+    Team "1" --> "1" User : owner（作成者）
+    TeamMember "多" --> "1" Team : team
+    TeamMember "多" --> "1" User : user
+    Team "1" --> "多" Task : team（所属チーム）
+```
+
+**現時点で実装済みの関連**：
+- `Task` → `User`（assignee）：多対1。1人のユーザーが、複数のタスクの担当者になれる
+- `Task` → `User`（createdBy）：多対1。1人のユーザーが、複数のタスクを作成できる（`assignee`とは別役割の関連）
+
+同じ`User`エンティティに対して、役割の異なる2本の関連（担当者・作成者）を持っている点がポイント。`Team`・`TeamMember`はフェーズ4で実装予定のため、現時点では未実装として図に含めている。
+
 ---
 
 ## 2. 開発環境・プロジェクト構成
@@ -140,7 +188,7 @@ com.example.spring_task_management
 |---|---|---|
 | フェーズ1 | プロジェクト作成、PostgreSQL接続確認 | ✅ 完了 |
 | フェーズ2 | ユーザー機能（会員登録・ログイン・Spring Security設定） | ✅ 完了 |
-| フェーズ3 | タスクのCRUD機能（個人タスクのみ） | 未着手 |
+| フェーズ3 | タスクのCRUD機能（個人タスクのみ） | 🔄 進行中 |
 | フェーズ4 | チーム機能（作成・メンバー招待） | 未着手 |
 | フェーズ5 | チームタスクの共有機能 | 未着手 |
 | フェーズ6 | 仕上げ（バリデーション・エラーハンドリング・READMEなどのドキュメント整備） | 未着手 |
@@ -645,6 +693,74 @@ public class SecurityConfig {
 
 ---
 
+### 5-7. フェーズ2追加対応：会員登録画面
+
+**背景**：フェーズ3-2（タスク作成機能）の動作確認用テストユーザーを作成する必要が生じたが、`HelloController`（動作確認用の`/register-test`）はすでに削除済み。これを機に、要件定義で予定していた正式な会員登録画面を実装することとした。
+
+**実施内容**：
+1. 会員登録画面（`register.html`）を作成
+2. `ViewController`に画面表示用（GET）とフォーム送信受付用（POST）のエンドポイントを追加
+3. 既存の`UserService.registerUser`（ハッシュ化・重複チェック機能）をそのまま再利用
+4. `SecurityConfig`の許可リストに`/register`を追加
+
+**実装コード**：
+
+`resources/templates/register.html`
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>会員登録</title>
+</head>
+<body>
+    <h1>会員登録</h1>
+    <form th:action="@{/register}" method="post">
+        <div>
+            <label>ユーザー名: <input type="text" name="username" /></label>
+        </div>
+        <div>
+            <label>メールアドレス: <input type="text" name="email" /></label>
+        </div>
+        <div>
+            <label>パスワード: <input type="password" name="password" /></label>
+        </div>
+        <button type="submit">登録する</button>
+    </form>
+</body>
+</html>
+```
+
+`controller/ViewController.java`（追加分）
+```java
+@GetMapping("/register")
+public String registerPage() {
+    return "register";
+}
+
+@Autowired
+private UserService userService;
+
+@PostMapping("/register")
+public String register(@RequestParam String username,
+                        @RequestParam String email,
+                        @RequestParam String password) {
+    userService.registerUser(username, email, password);
+    return "redirect:/login";
+}
+```
+
+**概念理解の補足**：
+- `@PostMapping`：`@GetMapping`とは異なり、フォーム送信（HTTPのPOSTメソッド）を受け取るためのアノテーション。`<form method="post">`と対になる
+- `return "redirect:/login";`：戻り値の先頭に`redirect:`を付けることで、指定URLへブラウザ側でリダイレクトさせる特別な指示になる（通常の`return "login";`とは異なり、テンプレート名としてではなくリダイレクト指示として解釈される）
+
+**実施結果**：✅ 完了
+- `/register`から`test@example.com`で新規登録し、`/login`へ正しくリダイレクトされることを確認
+- 登録した情報でログインでき、`/home`→`/profile`まで一連の流れが正常動作することを確認
+- DBの`password`カラムがBCryptハッシュ形式（`$2a$10$...`）で保存されていることを確認（平文保存でないことを確認）
+
+---
+
 ## 6. フェーズ2 総括
 
 フェーズ2（ユーザー機能：会員登録・ログイン・Spring Security設定）が全サブステップ完了。
@@ -668,3 +784,86 @@ public class SecurityConfig {
 - URLパス（`@GetMapping`の引数）とテンプレート名（`return`の戻り値）は名前が似ていても本来無関係なもの
 
 ---
+
+## 7. フェーズ3：タスクのCRUD機能（個人タスクのみ）
+
+サブステップに分割して実施。
+- 3-1：Taskエンティティ・Repository作成
+- 3-2：タスク作成機能（登録）
+- 3-3：タスク一覧表示機能
+- 3-4：タスク詳細・編集機能
+- 3-5：タスク削除機能
+- 3-6：ステータス管理（未着手／進行中／完了）の組み込み
+
+### 7-1. フェーズ3-1：Taskエンティティ・Repository作成
+
+**実施内容**：
+1. サンプル（`SampleNote`）で `@ManyToOne`・`@JoinColumn` による他エンティティとの関連（外部キー）の書き方を確認
+2. 要件定義に基づき `Task` エンティティ・`TaskRepository` を実装（`assignee`・`createdBy`の2つの`User`関連を持つ）
+
+**実装コード**：
+
+`entity/Task.java`
+```java
+package com.example.spring_task_management.entity;
+
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "tasks")
+public class Task {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+
+    private String description;
+
+    private String status;
+
+    private LocalDate dueDate;
+
+    @ManyToOne                              // Task:User=n:1
+    @JoinColumn(name = "assignee_id")       // foreign key
+    private User assignee;                  // 担当者
+
+    @ManyToOne                              // Task:User=n:1
+    @JoinColumn(name = "created_by")        // foreign key
+    private User createdBy;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    // getter / setter 省略
+}
+```
+
+`repository/TaskRepository.java`
+```java
+package com.example.spring_task_management.repository;
+
+import com.example.spring_task_management.entity.Task;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface TaskRepository extends JpaRepository<Task, Long> {
+}
+```
+
+**概念理解の補足（質疑応答より）**：
+- `@ManyToOne`：「多対1」の関連を表す。「複数の`Task`が、1人の`User`（担当者・作成者）に属する」という関係を表現
+- `@JoinColumn(name = "...")`：外部キーとして実際にDBに作られるカラム名を明示的に指定するアノテーション
+- フィールドの型を`Long`（IDそのもの）ではなく`User`（関連エンティティそのもの）にする理由：`task.getAssignee().getUsername()`のように、関連する相手の情報に直接アクセスできる。実際のDB保存時は、Hibernateが自動的にIDへ変換してくれる
+- `JpaRepository<Task, Long>`のジェネリクス：1つ目は「扱うエンティティの型」、2つ目は「そのエンティティの主キーの型」。この情報をもとに、Spring Data JPAが適切な型のCRUDメソッドを自動生成する
+- CRUD：Create（作成）・Read（読み取り）・Update（更新）・Delete（削除）の頭文字。`save()`は新規作成・更新の両方を兼ねる（IDの有無で内部的に判定される）
+
+**実施結果**：✅ 完了
+- `tasks`テーブルが自動生成されることを確認（`\d tasks`で構造確認済み）
+- `assignee_id`・`created_by`の2つの外部キー制約が、それぞれ`users(id)`を正しく参照していることを確認
+- `due_date`が`date`型で生成されていることを確認
+
+---
+
