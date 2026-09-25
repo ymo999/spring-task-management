@@ -49,8 +49,7 @@ public class SecurityConfig {
 
                             "/error",
                             "/login",
-                            "/register",
-                            "/tasks/new"
+                            "/register"
                     ).permitAll().anyRequest().authenticated()
                 )
                 .formLogin(

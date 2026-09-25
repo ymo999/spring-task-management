@@ -1,9 +1,5 @@
 package com.example.spring_task_management.controller;
 
-import com.example.spring_task_management.entity.Task;
-import com.example.spring_task_management.entity.User;
-import com.example.spring_task_management.repository.UserRepository;
-import com.example.spring_task_management.service.TaskService;
 import com.example.spring_task_management.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,34 +31,6 @@ public class ViewController {
         return "profile";
     }
 
-    @Autowired
-    private TaskService taskService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    /**
-     * タスク登録動作確認用
-     * @param title
-     * @param description
-     * @param dueDate
-     * @param userDetails
-     * @param model
-     * @return 遷移先ページ名称（簡易表示用テンプレート名称）
-     */
-    @GetMapping("/task-create-test")
-    private String taskCreateTest(@RequestParam String title,
-                                  @RequestParam String description,
-                                  @RequestParam String dueDate,
-                                  @AuthenticationPrincipal UserDetails userDetails,
-                                  Model model) {
-        // ログイン後なので例外がスローされることはないはずだが念のため（型として安全に扱うため）
-        User loginUser = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        Task task = taskService.createTask(title, description, LocalDate.parse(dueDate), loginUser);
-        model.addAttribute("message",
-                "登録完了! id=" + task.getId() + ", title=" + task.getTitle());
-        return "task-create-result";        // 簡易表示用テンプレート
-    }
 
     /**
      * 会員登録動作確認用
